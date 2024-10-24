@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de IPs</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script>
+        async function checkIp() {
+            const ip = document.getElementById('ipInput').value;
+            const response = await fetch(`/api/check/${ip}`);
+            const data = await response.json();
+
+            // Mostrar resultados en texto plano
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <h3>Resultados para la IP: ${ip}</h3>
+                <h4>BlacklistMaster:</h4>
+                <p>${formatBlacklistMaster(data.blacklistMaster)}</p>
+                <h4>ipinfo.io:</h4>
+                <p>${formatIpInfo(data.ipInfo)}</p>
+                <h4>AbuseIPDB:</h4>
+                <p>${formatAbuseIPDB(data.abuseIPDB)}</p>
+            `;
+        }
+
+        // Función para formatear los datos de BlacklistMaster
+        function formatBlacklistMaster(data) {
+            if (data.error) {
+                return `<span class="error">Error: ${data.error}</span>`;
+            }
+            return data.blacklisted ? 
+                `La IP está listada en ${data.blacklisted} listas negras.` : 
+                'La IP no está listada en ninguna lista negra.';
+        }
+
+        // Función para formatear los datos de ipinfo.io
+        function formatIpInfo(data) {
+            if (data.error) {
+                return `<span class="error">Error: ${data.error}</span>`;
+            }
+            return `Ubicación: ${data.city}, ${data.region}, ${data.country}<br>Proveedor: ${data.org}`;
+        }
+
+        // Función para formatear los datos de AbuseIPDB
+        function formatAbuseIPDB(data) {
+            if (data.error) {
+                return `<span class="error">Error: ${data.error}</span>`;
+            }
+            return `Reputación de la IP: ${data.data.abuseConfidenceScore}%<br>Reportes totales: ${data.data.totalReports}`;
+        }
+    </script>
+</head>
+<body>
+    <div class="login-container">
+        <h1>Verificador de IP</h1>
+        <div class="form-section">
+            <input type="text" id="ipInput" placeholder="Introduce una dirección IP 0.0.0.0" />
+            <button onclick="checkIp()">Verificar IP</button>
+        </div>
+        <div id="results"></div>
+    </div>
+</body>
+</html>
